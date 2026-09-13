@@ -194,6 +194,13 @@ func before(cmd *cobra.Command) error {
 	case "", "help", "version", "mount", mountSshfs, umountSshfs:
 		return nil
 	}
+	// Printing a Bake definition only reads configuration; no user namespace or
+	// container storage is needed.
+	if cmd.Name() == "bake" {
+		if printOnly, _ := cmd.Flags().GetBool("print"); printOnly {
+			return nil
+		}
+	}
 	debugCapabilities()
 	unshare.MaybeReexecUsingUserNamespace(false)
 	if globalFlagResults.CPUProfile != "" {
@@ -279,6 +286,7 @@ func main() {
 	mainInit()
 
 	addcopyInit()
+	bakeInit()
 	buildInit()
 	commitInit()
 	configInit()

@@ -382,6 +382,21 @@ return 1
      esac
  }
 
+ _buildah_bake() {
+     case "$prev" in
+         --file|-f)
+             _filedir
+             return
+             ;;
+         --set)
+             return
+             ;;
+     esac
+     case "$cur" in
+         -*) COMPREPLY=( $(compgen -W "--file -f --set --print --help -h" -- "$cur") ) ;;
+     esac
+ }
+
  _buildah_bud() {
      local boolean_options="
      --all-platforms
@@ -1188,6 +1203,7 @@ esac
 
    local commands=(
        add
+       bake
        bud
        build
        commit

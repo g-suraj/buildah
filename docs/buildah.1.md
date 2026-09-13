@@ -159,6 +159,7 @@ Buildah can set up environment variables from the env entry in the [engine] tabl
 | Command    | Man Page                                         | Description                                                                                          |
 | ---------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
 | add        | [buildah-add(1)](buildah-add.1.md)               | Add the contents of a file, URL, or a directory to the container.                                    |
+| bake       | [buildah-bake(1)](buildah-bake.1.md)             | Build images from a Bake definition.                                                               |
 | build      | [buildah-build(1)](buildah-build.1.md)           | Builds an OCI image using instructions in one or more Containerfiles.                                |
 | commit     | [buildah-commit(1)](buildah-commit.1.md)         | Create an image from a working container.                                                            |
 | config     | [buildah-config(1)](buildah-config.1.md)         | Update image configuration settings.                                                                 |

@@ -12,6 +12,17 @@ import (
 )
 
 func buildInit() {
+	command, _, err := newBuildCommand()
+	if err != nil {
+		logrus.Error(err)
+		os.Exit(1)
+	}
+	rootCmd.AddCommand(command)
+}
+
+// newBuildCommand creates independent flag state, also used when preparing Bake
+// targets so defaults and validation stay identical to the build command.
+func newBuildCommand() (*cobra.Command, buildahcli.BuildOptions, error) {
 	buildDescription := `
   Builds an OCI image using instructions in one or more Containerfiles.
 
@@ -24,6 +35,13 @@ func buildInit() {
 	fromAndBudResults := buildahcli.FromAndBudResults{}
 	userNSResults := buildahcli.UserNSResults{}
 	namespaceResults := buildahcli.NameSpaceResults{}
+	br := buildahcli.BuildOptions{
+		LayerResults:      &layerFlagsResults,
+		BudResults:        &buildFlagResults,
+		UserNSResults:     &userNSResults,
+		FromAndBudResults: &fromAndBudResults,
+		NameSpaceResults:  &namespaceResults,
+	}
 
 	buildCommand := &cobra.Command{
 		Use:     "build [CONTEXT]",
@@ -31,13 +49,6 @@ func buildInit() {
 		Short:   "Build an image using instructions in a Containerfile",
 		Long:    buildDescription,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			br := buildahcli.BuildOptions{
-				LayerResults:      &layerFlagsResults,
-				BudResults:        &buildFlagResults,
-				UserNSResults:     &userNSResults,
-				FromAndBudResults: &fromAndBudResults,
-				NameSpaceResults:  &namespaceResults,
-			}
 			return buildCmd(cmd, args, br)
 		},
 		Args: cobra.MaximumNArgs(1),
@@ -58,8 +69,7 @@ func buildInit() {
 	layerFlags := buildahcli.GetLayerFlags(&layerFlagsResults)
 	fromAndBudFlags, err := buildahcli.GetFromAndBudFlags(&fromAndBudResults, &userNSResults, &namespaceResults)
 	if err != nil {
-		logrus.Errorf("failed to setup From and Build flags: %v", err)
-		os.Exit(1)
+		return nil, br, fmt.Errorf("setting up build flags: %w", err)
 	}
 
 	flags.AddFlagSet(&buildFlags)
@@ -67,7 +77,7 @@ func buildInit() {
 	flags.AddFlagSet(&fromAndBudFlags)
 	flags.SetNormalizeFunc(buildahcli.AliasFlags)
 
-	rootCmd.AddCommand(buildCommand)
+	return buildCommand, br, nil
 }
 
 func buildCmd(c *cobra.Command, inputArgs []string, iopts buildahcli.BuildOptions) error {
